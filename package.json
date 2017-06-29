@@ -1,0 +1,21 @@
+{
+  "name": "media-stream-processor",
+  "version": "0.0.1",
+  "description": "media stream processor for iFogCloud Project",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@ghe.nttcloud.net:iFogCloud/media-stream-processor.git"
+  },
+  "keywords": [
+    "gstreamer"
+  ],
+  "author": "NTT Communication Corporation",
+  "license": "MIT",
+  "dependencies": {
+    "gstreamer-superficial": "0.0.4"
+  }
+}
