@@ -12,5 +12,5 @@ pipeline:
     - t.
     - appsink max-buffers=1 name=sink
 analyzer:
-  host: 10.49.52.177
+  host: 10.49.51.135
   port: 7000

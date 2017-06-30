@@ -133,8 +133,10 @@ class MediaStreamProcessor {
   _post_data() {
     if(!this.lastdata) return;
 
+    logger.debug(`attempt to post image data [${this.lastdata.length}]`)
+
     fetch(this.endpoint, { method: 'POST', body: this.lastdata })
-      .then( res => logger.debug(`finished to post data - (${res.status}) [${this.lastdata.length}]`))
+      .then( res => logger.debug(`finished to post data - (${res.status})`))
       .catch(err => logger.warn(err.message) )
 
     this.lastdata = null
