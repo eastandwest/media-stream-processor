@@ -135,8 +135,9 @@ class MediaStreamProcessor {
 
     logger.debug(`attempt to post image data [${this.lastdata.length}]`)
 
-    fetch(this.endpoint, { method: 'POST', body: this.lastdata })
-      .then( res => logger.debug(`finished to post data - (${res.status})`))
+    fetch(this.endpoint, { method: 'POST', headers: { 'Content-Type': 'application/octet-stream'}, body: this.lastdata })
+      .then( res => res.json() )
+      .then( obj =>  logger.debug(`finished to post data - (${JSON.stringify(obj)})`))
       .catch(err => logger.warn(err.message) )
 
     this.lastdata = null
