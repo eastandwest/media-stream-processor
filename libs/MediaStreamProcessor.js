@@ -6,6 +6,7 @@ const fetch     = require('node-fetch')
 const Enum      = require('enum')
 const jpg       = require('jpeg-turbo')
 const express   = require('express')
+const cors      = require('cors')
 
 log4js.level = 'debug'
 const logger = log4js.getLogger('MediaStreamProcessor')
@@ -135,6 +136,8 @@ class MediaStreamProcessor {
   }
 
   _setRoute() {
+    this.app.use(cors())
+
     this.app.get('/image/current', (req, res) => {
       if(!this.lastdata) {
         res.status(404).send("no data")
