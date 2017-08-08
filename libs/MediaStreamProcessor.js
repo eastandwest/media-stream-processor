@@ -5,9 +5,10 @@ const log4js    = require('log4js')
 const fetch     = require('node-fetch')
 const Enum      = require('enum')
 const jpg       = require('jpeg-turbo')
+const express   = require('express')
 
-const logger = log4js.getLogger('MediaStreamProcessor')
 log4js.level = 'debug'
+const logger = log4js.getLogger('MediaStreamProcessor')
 
 const status = new Enum([
     'IDLE',
@@ -20,23 +21,31 @@ const status = new Enum([
 class MediaStreamProcessor {
   constructor() {
     this.pipelineScript = ''
-    this.analyzer = {protocol: 'http', host: 'localhost', port: 7000}
-    this.endpoint = ''
+    this.port = 7000
     this.pipeline = null
     this.appsink = null
     this.lastdata = null
-    this.interval = 1000
     this.status = status.IDLE.key
+    this.app = express()
 
     this.CONFFILE = __dirname + "/../config.yaml"
   }
 
   start() {
-    this.load_conf()
-      .then(() => this.generate_pipeline())
-      .then(() => this.start_pipeline())
-      .then(() => this.start_posting())
-      .catch(err => logger.warn(err))
+    return new Promise((resolv, reject) => {
+      this.load_conf()
+        .then(() => this.generate_pipeline())
+        .then(() => this.start_pipeline())
+        .then(() => {
+          this._setRoute()
+          return this._startRESTServer()
+        })
+        .then(() => {
+          logger.info(`start server on port ${this.port}`)
+          resolv()
+        })
+        .catch(err => reject(err))
+    })
   }
 
   load_conf() {
@@ -51,10 +60,9 @@ class MediaStreamProcessor {
             if(typeof(data) !== 'object') throw "load_conf - wrong format"
 
             this._createPipelineScript(data)
-            this.analyzer = Object.assign({}, this.analyzer, data.analyzer)
+            this.port = data.port || 7000
             this.width = data.width || 640
             this.height = data.height || 480
-            this.endpoint = `${this.analyzer.protocol}://${this.analyzer.host}:${this.analyzer.port}/`
 
             this.status = status.SETUPPED.key
 
@@ -102,13 +110,6 @@ class MediaStreamProcessor {
     })
   }
 
-  start_posting() {
-    setInterval( ev => {
-      this._post_data()
-    }, this.interval)
-  }
-
-
   _createPipelineScript(conf) {
     if(!conf.pipeline || !(conf.pipeline instanceof Array) ) {
       throw 'createPipelineScript - wrong format'
@@ -133,23 +134,36 @@ class MediaStreamProcessor {
     }
   }
 
-  _post_data() {
-    if(!this.lastdata) return;
+  _setRoute() {
+    this.app.get('/image/current', (req, res) => {
+      if(!this.lastdata) {
+        res.status(404).send("no data")
+      } else {
+        try {
+          const jpgData = jpg.compressSync(this.lastdata, {
+            format: jpg.FORMAT_RGB,
+            width: this.width,
+            height: this.height
+          })
 
-    const jpgData = jpg.compressSync(this.lastdata, {
-      format: jpg.FORMAT_RGB,
-      width: this.width,
-      height: this.height
+          res.set('Content-Type', 'image/jpg').send(jpgData)
+        } catch(err) {
+          res.status(500).send(err.message)
+        }
+      }
     })
+  }
 
-    logger.debug(`attempt to post image data [${jpgData.length}]`)
-
-    fetch(this.endpoint, { method: 'POST', headers: { 'Content-Type': 'image/jpeg'}, body: jpgData })
-      .then( res => res.json() )
-      .then( obj =>  logger.debug(`finished to post data - (${JSON.stringify(obj)})`))
-      .catch(err => logger.warn(err.message) )
-
-    this.lastdata = null
+  _startRESTServer() {
+    return new Promise((resolv, reject) => {
+      try {
+        this.app.listen(this.port, () => {
+          resolv()
+        })
+      } catch(err) {
+        reject(err)
+      }
+    })
   }
 }
 
