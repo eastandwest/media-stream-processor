@@ -1,6 +1,6 @@
 {
   "name": "media-stream-processor",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "media stream processor for iFogCloud Project",
   "main": "index.js",
   "scripts": {
