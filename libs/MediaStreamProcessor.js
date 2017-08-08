@@ -4,6 +4,7 @@ const gstreamer = require('gstreamer-superficial')
 const log4js    = require('log4js')
 const fetch     = require('node-fetch')
 const Enum      = require('enum')
+const jpg       = require('jpeg-turbo')
 
 const logger = log4js.getLogger('MediaStreamProcessor')
 log4js.level = 'debug'
@@ -51,6 +52,8 @@ class MediaStreamProcessor {
 
             this._createPipelineScript(data)
             this.analyzer = Object.assign({}, this.analyzer, data.analyzer)
+            this.width = data.width || 640
+            this.height = data.height || 480
             this.endpoint = `${this.analyzer.protocol}://${this.analyzer.host}:${this.analyzer.port}/`
 
             this.status = status.SETUPPED.key
@@ -133,9 +136,15 @@ class MediaStreamProcessor {
   _post_data() {
     if(!this.lastdata) return;
 
-    logger.debug(`attempt to post image data [${this.lastdata.length}]`)
+    const jpgData = jpg.compressSync(this.lastdata, {
+      format: jpg.FORMAT_RGB,
+      width: this.width,
+      height: this.height
+    })
 
-    fetch(this.endpoint, { method: 'POST', headers: { 'Content-Type': 'application/octet-stream'}, body: this.lastdata })
+    logger.debug(`attempt to post image data [${jpgData.length}]`)
+
+    fetch(this.endpoint, { method: 'POST', headers: { 'Content-Type': 'image/jpeg'}, body: jpgData })
       .then( res => res.json() )
       .then( obj =>  logger.debug(`finished to post data - (${JSON.stringify(obj)})`))
       .catch(err => logger.warn(err.message) )
