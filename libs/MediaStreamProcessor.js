@@ -29,7 +29,7 @@ class MediaStreamProcessor {
     this.status = status.IDLE.key
     this.app = express()
 
-    this.CONFFILE = __dirname + "/../config.yaml"
+    this.CONFFILE = __dirname + "/../conf/config.yaml"
   }
 
   start() {
