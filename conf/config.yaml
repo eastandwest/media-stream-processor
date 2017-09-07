@@ -3,6 +3,9 @@ pipeline:
     - v4l2src device=/dev/video0
     - video/x-raw,format=RGB,width=640,height=480,framerate=30/1
     - tee name=t
+  -
+    - t.
+    - queue
     - videoconvert
     - timeoverlay
     - omxh264enc target-bitrate=2000000 control-rate=variable
@@ -10,6 +13,7 @@ pipeline:
     - udpsink host=10.49.52.168 port=5004
   -
     - t.
+    - queue
     - appsink max-buffers=1 name=sink
 width: 640
 height: 480

@@ -1,0 +1,14 @@
+pipeline-for-appsink: # pipeline script for analytics
+  -
+    - udpsrc address=224.1.1.1 port=25004 caps="application/x-rtp, media=(string)video, clock-rate=(int)90000, encoding-name=(string)H264"
+    - rtph264depay
+    - avdec_h264
+    - videoconvert
+    - jpegenc
+    - appsink max-buffers=1 name=sink
+pipeline-for-execute
+  - "udpsrc port=15004 ! udpsink host=224.1.1.1 port=25004 loop=true" # split by ip multicast
+  - "udpsrc address=224.1.1.1 port=25004 ! progressreport ! udpsink host=janus port=5004" # relay to janus
+width: 640 # video width
+height: 480 # video height
+port: 7000 # REST interface port number
