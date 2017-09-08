@@ -21,9 +21,11 @@ const status = new Enum([
 
 class MediaStreamProcessor {
   constructor() {
-    this.pipelineScript = ''
+    this.appsrcPipelineScript = ''
+    this.executePipelineScripts = []
     this.port = 7000
-    this.pipeline = null
+    this.appsrcPipeline = null
+    this.executePipelines = []
     this.appsink = null
     this.lastdata = null
     this.status = status.IDLE.key
@@ -60,10 +62,9 @@ class MediaStreamProcessor {
           try {
             if(typeof(data) !== 'object') throw "load_conf - wrong format"
 
-            this._createPipelineScript(data)
+            this._createAppSrcPipelineScript(data)
+            this.executePipelineScripts = data['pipeline-for-execute']
             this.port = data.port || 7000
-            this.width = data.width || 640
-            this.height = data.height || 480
 
             this.status = status.SETUPPED.key
 
@@ -82,8 +83,15 @@ class MediaStreamProcessor {
   generate_pipeline() {
     new Promise( (resolv, reject) => {
       try {
-        this.pipeline = new gstreamer.Pipeline(this.pipelineScript)
-        this.appsink = this.pipeline.findChild('sink')
+        this.appsrcPipeline = new gstreamer.Pipeline(this.appsrcPipelineScript)
+        this.appsink = this.appsrcPipeline.findChild('sink')
+
+        if(this.executePipelineScripts instanceof Array) {
+          this.executePipelineScripts.forEach( script => {
+            const pipeline = new gstreamer.Pipeline(script)
+            this.executePipelines.push(pipeline)
+          })
+        }
 
         resolv()
       } catch(err) {
@@ -95,10 +103,14 @@ class MediaStreamProcessor {
   start_pipeline() {
     new Promise( (resolv, reject) => {
       try {
-        if(!this.pipeline || !this.appsink) throw 'pipeline have not been generated'
+        if(!this.appsrcPipeline || !this.appsink) throw 'pipeline have not been generated'
 
-        this.pipeline.play()
+        this.appsrcPipeline.play()
         this.appsink.pull(this._onPull.bind(this))
+
+        this.executePipelines.forEach( pipeline => {
+          pipeline.play()
+        })
 
         this.status = status.STARTING.key
 
@@ -111,13 +123,14 @@ class MediaStreamProcessor {
     })
   }
 
-  _createPipelineScript(conf) {
-    if(!conf.pipeline || !(conf.pipeline instanceof Array) ) {
+  _createAppSrcPipelineScript(conf) {
+    const scriptArray = conf['pipeline-for-appsrc']
+    if(!scriptArray || !(scriptArray instanceof Array) ) {
       throw 'createPipelineScript - wrong format'
     }
 
-    this.pipelineScript = conf.pipeline.map( arr => arr.join(" ! ")).join(" ")
-    logger.debug(`_createPipelineScript - ${this.pipelineScript}`)
+    this.appsrcPipelineScript = scriptArray.map( arr => arr.join(" ! ")).join(" ")
+    logger.debug(`_createAppSrcPipelineScript - ${this.appsrcPipelineScript}`)
   }
 
 
@@ -143,12 +156,6 @@ class MediaStreamProcessor {
         res.status(404).send("no data")
       } else {
         try {
-          // const jpgData = jpg.compressSync(this.lastdata, {
-          //   format: jpg.FORMAT_RGB,
-          //   width: this.width,
-          //   height: this.height
-          // })
-
           res.set('Content-Type', 'image/jpg').send(this.lastdata)
         } catch(err) {
           res.status(500).send(err.message)
