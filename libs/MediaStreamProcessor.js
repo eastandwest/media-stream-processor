@@ -4,7 +4,6 @@ const gstreamer = require('gstreamer-superficial')
 const log4js    = require('log4js')
 const fetch     = require('node-fetch')
 const Enum      = require('enum')
-const jpg       = require('jpeg-turbo')
 const express   = require('express')
 const cors      = require('cors')
 
