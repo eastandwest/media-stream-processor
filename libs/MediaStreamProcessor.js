@@ -143,13 +143,13 @@ class MediaStreamProcessor {
         res.status(404).send("no data")
       } else {
         try {
-          const jpgData = jpg.compressSync(this.lastdata, {
-            format: jpg.FORMAT_RGB,
-            width: this.width,
-            height: this.height
-          })
+          // const jpgData = jpg.compressSync(this.lastdata, {
+          //   format: jpg.FORMAT_RGB,
+          //   width: this.width,
+          //   height: this.height
+          // })
 
-          res.set('Content-Type', 'image/jpg').send(jpgData)
+          res.set('Content-Type', 'image/jpg').send(this.lastdata)
         } catch(err) {
           res.status(500).send(err.message)
         }
