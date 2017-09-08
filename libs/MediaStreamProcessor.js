@@ -62,7 +62,7 @@ class MediaStreamProcessor {
             if(typeof(data) !== 'object') throw "load_conf - wrong format"
 
             this._createAppSrcPipelineScript(data)
-            this.executePipelineScripts = data['pipeline-for-execute']
+            this.executePipelineScripts = data['pipeline-for-execute'] || []
             this.port = data.port || 7000
 
             this.status = status.SETUPPED.key
