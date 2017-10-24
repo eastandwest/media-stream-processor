@@ -13,7 +13,7 @@ Media Stream Processor in iFogCloud project.
 super easy
 
 ```
-gstreamer1.0 gstreamer1.0-libav libgstreamer-plugins-base1.0-dev
+sudo apt-get install -y gstreamer1.0 gstreamer1.0-libav libgstreamer-plugins-base1.0-dev
 ```
 
 ### RaspberryPI(jessie)
