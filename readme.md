@@ -4,6 +4,10 @@ Media Stream Processor in iFogCloud project.
 
 # overview
 
+As a default, it will receive RTP/H.264 stream from 15004. Internally, it will strip the stream by IP multicast with 224.1.1.1 and 25004/udp. One pipeline will generate jpeg image from each H.264 frame and another will tranffer multicast stream to unicast stream with 5004/udp (destination address is localhost)
+
+To obtain current jpeg image, you can have it from http://localhost:7000/image/current
+
 # dependencies
 
 ## gstreamer
