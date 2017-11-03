@@ -8,6 +8,17 @@ As a default, it will receive RTP/H.264 stream from 15004. Internally, it will s
 
 To obtain current jpeg image, you can have it from http://localhost:7000/image/current
 
+## install
+
+before instllation, you need to install depndency libraries.
+
+```
+yarn install
+sudo yarn link
+sudo yarn link media-stream-processor
+media-stream-processor
+```
+
 # dependencies
 
 ## gstreamer

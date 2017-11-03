@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 // entry point
 const log4js = require('log4js')
 const MediaStreamProcessor = require('./libs/MediaStreamProcessor')
