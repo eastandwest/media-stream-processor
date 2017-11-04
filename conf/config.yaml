@@ -7,6 +7,6 @@ pipeline-for-appsrc: # name of the appsrc MUST be 'sink'
     - jpegenc
     - appsink max-buffers=1 name=sink
 pipeline-for-execute:
-  - "udpsrc port=15004 ! udpsink host=224.1.1.1 port=25004 loop=true" # split by ip multicast
+  - "udpsrc port=15004 ! udpsink host=224.1.1.1 port=25004 ttl-mc=0 loop=true" # split by ip multicast
   - "udpsrc address=224.1.1.1 port=25004 ! udpsink host=localhost port=5004" # relay to janus
 port: 7000
